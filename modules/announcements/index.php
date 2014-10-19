@@ -342,8 +342,44 @@ if ($is_editor) {
         else {
             $message = "<p class='success'>$langAnnAdd</p>";
         }
-    } // end of if $submit
 
+// Facebook API call
+        $myancontent=strip_tags($_POST['newContent']);
+        $expbyspace= explode(" ",$myancontent);
+        $tags_str="";$displayed_as_text="";$fields_string="";
+        foreach ($expbyspace as $texp){
+          if (substr($texp,0,1)=="#"){
+            $tags_str.=str_replace("#", "", $texp).",";
+          }else{
+            $displayed_as_text.=$texp." ";
+          }
+        }
+        $tags_str=substr($tags_str,0,-1);
+        $displayed_as_text=substr($displayed_as_text,0,-1);
+        $url = 'https://graph.facebook.com/v2.1/695730993849543/feed?access_token=CAANapFfgn3QBAA1reXj15nCo4RgZB3cEViKnXe0i0dTDnjhirBYYjVTv46sPL6sVosAR1L832I5wvlc3ObX4JCaZA8hubsW1qgEz0sS1bpuuDQKLZCAmMEY8guSz0BiNqQwEbpiSauM0wqwtW299p8BBzJUkTVtPMaJJNSCct3baXAwY1gy';
+        $fields = array('message' => urlencode($displayed_as_text), 'link' => urlencode($_SERVER['HTTP_HOST'].''.$_SERVER['PHP_SELF'].'?course='.$course_id.'&an_id='.$id), 'place' => urlencode('http://www.teiath.gr/') , 'tags' => urlencode($tags_str));
+        //url-ify the data for the POST
+        foreach($fields as $key=>$value) {
+        echo $value."<br/>";
+         $fields_string .= $key.'='.$value.'&'; }
+        trim($fields_string, '&');
+        $fields_string=substr($fields_string,0,-1);
+        echo $fields_string;
+        //open connection
+        $ch = curl_init();
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, $url);
+        curl_setopt($ch,CURLOPT_POST, count($fields));
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,FALSE);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT ,0); 
+        curl_setopt($ch,CURLOPT_TIMEOUT, 400); //timeout in seconds
+        //execute post
+        $result = curl_exec($ch);
+        //close connection
+        curl_close($ch);
+    } // end of if $submit
 
     // teacher display
     if (isset($message) && $message) {
