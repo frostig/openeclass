@@ -532,7 +532,7 @@ function submit_work($id, $on_behalf_of = null) {
             $pfileext = pathinfo("$workPath/$filename", PATHINFO_EXTENSION);
             //set POST variables
             $url = 'http://api.hackerearth.com/code/run/';
-            $langvals=array{'.c'=>'C', '.js'=>'JAVASCRIPT', '.php'=>'PHP', '.py'=>'PYTHON'}; //only for some, as an example, because ALL extensions are a bit chaotic to checkout :/ ...
+            $langvals=array('.c'=>'C', '.js'=>'JAVASCRIPT', '.php'=>'PHP', '.py'=>'PYTHON'); //only for some, as an example, because ALL extensions are a bit chaotic to checkout :/ ...
             foreach($langvals as $pext=>$plang){
                 if ($pfileext==$pext){
                     $langvalue=$plang;
