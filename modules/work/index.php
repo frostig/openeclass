@@ -529,9 +529,16 @@ function submit_work($id, $on_behalf_of = null) {
             // Auto-judge: Send file to hackearth
             global $hackerEarthKey;
             $content = file_get_contents("$workPath/$filename");
+            $pfileext = pathinfo("$workPath/$filename", PATHINFO_EXTENSION);
             //set POST variables
             $url = 'http://api.hackerearth.com/code/run/';
-            $fields = array('client_secret' => $hackerEarthKey, 'source' => $content, 'lang' => 'PYTHON');
+            $langvals=array{'.c'=>'C', '.js'=>'JAVASCRIPT', '.php'=>'PHP', '.py'=>'PYTHON'}; //only for some, as an example, because ALL extensions are a bit chaotic to checkout :/ ...
+            foreach($langvals as $pext=>$plang){
+                if ($pfileext==$pext){
+                    $langvalue=$plang;
+                }
+            }
+            $fields = array('client_secret' => $hackerEarthKey, 'source' => $content, 'lang' => $langvalue);
             //url-ify the data for the POST
             foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
             rtrim($fields_string, '&');
