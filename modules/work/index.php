@@ -327,14 +327,22 @@ function add_assignment() {
     $assign_to_specific = filter_input(INPUT_POST, 'assign_to_specific', FILTER_VALIDATE_INT);
     $assigned_to = filter_input(INPUT_POST, 'ingroup', FILTER_VALIDATE_INT, FILTER_REQUIRE_ARRAY);
     $auto_judge = filter_input(INPUT_POST, 'auto_judge', FILTER_VALIDATE_INT);
+    $goflangs=array("php","js","c","py");
+    $avexts="";
+    foreach ($goflangs as $tlang){
+        if ($_POST['avexts_'.$tlang]){
+            $avexts .= $tlang."=".$_POST['avexts_'.$tlang]."|";
+        }
+    }
+
     $secret = uniqid('');
 
     if ($assign_to_specific == 1 && empty($assigned_to)) {
         $assign_to_specific = 0;
     }
     if (@mkdir("$workPath/$secret", 0777) && @mkdir("$workPath/admin_files/$secret", 0777, true)) {       
-        $id = Database::get()->query("INSERT INTO assignment (course_id, title, description, deadline, late_submission, comments, submission_date, secret_directory, group_submissions, max_grade, assign_to_specific,auto_judge) "
-                . "VALUES (?d, ?s, ?s, ?t, ?d, ?s, ?t, ?s, ?d, ?d, ?d, ?d)", $course_id, $title, $desc, $deadline, $late_submission, '', date("Y-m-d H:i:s"), $secret, $group_submissions, $max_grade, $assign_to_specific,$auto_judge)->lastInsertID;
+        $id = Database::get()->query("INSERT INTO assignment (course_id, title, description, deadline, late_submission, comments, submission_date, secret_directory, group_submissions, max_grade, assign_to_specific,auto_judge,avexts) "
+                . "VALUES (?d, ?s, ?s, ?t, ?d, ?s, ?t, ?s, ?d, ?d, ?d, ?d, ?s)", $course_id, $title, $desc, $deadline, $late_submission, '', date("Y-m-d H:i:s"), $secret, $group_submissions, $max_grade, $assign_to_specific,$auto_judge,$avexts)->lastInsertID;
         $secret = work_secret($id);
         if ($id) {
             $local_name = uid_to_name($uid);
@@ -422,10 +430,11 @@ function submit_work($id, $on_behalf_of = null) {
         }
     } //checks for submission validity end here
     
-    $row = Database::get()->querySingle("SELECT title, group_submissions, auto_judge FROM assignment WHERE course_id = ?d AND id = ?d", $course_id, $id);
+    $row = Database::get()->querySingle("SELECT title, group_submissions, auto_judge, avexts FROM assignment WHERE course_id = ?d AND id = ?d", $course_id, $id);
     $title = q($row->title);
     $group_sub = $row->group_submissions;
     $auto_judge = $row->auto_judge;
+    $avexts = $row->avexts;
     $nav[] = $works_url;
     $nav[] = array('url' => "$_SERVER[SCRIPT_NAME]?id=$id", 'name' => $title);
 
@@ -524,12 +533,13 @@ function submit_work($id, $on_behalf_of = null) {
         } else {
             $tool_content .= "<p class='caution'>$langUploadError<br /><a href='$_SERVER[SCRIPT_NAME]?course=$course_code'>$langBack</a></p><br />";
         }
+        
+        $pfileext = pathinfo("$workPath/$filename", PATHINFO_EXTENSION);
 
-        if($auto_judge) {
+        if($auto_judge && strpos($avexts,$pfileext)>=0) { //check if the file extension sent is in the available extensions array - set by proffesor
             // Auto-judge: Send file to hackearth
             global $hackerEarthKey;
             $content = file_get_contents("$workPath/$filename");
-            $pfileext = pathinfo("$workPath/$filename", PATHINFO_EXTENSION);
             //set POST variables
             $url = 'http://api.hackerearth.com/code/run/';
             $langvals=array('.c'=>'C', '.js'=>'JAVASCRIPT', '.php'=>'PHP', '.py'=>'PYTHON'); //only for some, as an example, because ALL extensions are a bit chaotic to checkout :/ ...
@@ -619,6 +629,15 @@ function new_assignment() {
         <tr>
           <th>Auto-judge:</th>
           <td><input type='checkbox' id='auto_judge' name='auto_judge' value='1' checked='1' /></td>
+        </tr>
+        <tr>
+          <th>Έγκυρες γλώσσες προγραμματισμού:</th>
+            <td>
+              <input type='checkbox' id='avexts_php' name='avexts_php' value='1' checked='1' />php
+              <input type='checkbox' id='avexts_js' name='avexts_js' value='1' checked='1' />javascript
+              <input type='checkbox' id='avexts_c' name='avexts_c' value='1' checked='1' />c
+              <input type='checkbox' id='avexts_py' name='avexts_py' value='1' checked='1' />python
+            </td>
         </tr>
         <tr id='assignees_tbl' style='display:none;'>
           <th class='left' valign='top'></th>
