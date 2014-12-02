@@ -28,6 +28,7 @@ $require_current_course = true;
 $require_login = true;
 $require_help = true;
 $helpTopic = 'Work';
+$helpTopic_sm = 'Test_Work';
 
 require_once '../../include/baseTheme.php';
 require_once 'include/lib/forcedownload.php';
@@ -85,6 +86,41 @@ if ($is_editor) {
     }
 }
 
+
+$head_content .= " // make this for every user, because we need it for students also
+<script type='text/javascript'>
+$(function() { 
+ function changeAutojudgeScenariosVisibility() {
+            if($(this).is(':checked')) {
+                $(this).parent().find('table').show();
+            } else {
+                $(this).parent().find('table').hide();
+            }
+        }
+        $('#autojudge_new_scenario, #autojudge_new_scenario_stud').click(function(e) {
+            var rows = $(this).parent().parent().parent().find('tr').size()-1;
+            // Clone the first line
+            var newLine = $(this).parent().parent().parent().find('tr:first').clone();
+            // Replace 0 wth the line number
+            newLine.html(newLine.html().replace(/auto_judge_scenarios\[0\]/g, 'auto_judge_scenarios['+rows+']'));
+            // Initialize the remove event and show the button
+            newLine.find('.autojudge_remove_scenario').show();
+            newLine.find('.autojudge_remove_scenario').click(removeRow);
+            // Insert it just before the final line
+            newLine.insertBefore($(this).parent().parent().parent().find('tr:last'));
+            e.preventDefault();
+            return false;
+        });
+        // Remove row
+        function removeRow(e) {
+            $(this).parent().parent().remove();
+            e.preventDefault();
+            return false;
+        }
+        $('.autojudge_remove_scenario').click(removeRow);
+    });
+</script>";  
+
 if ($is_editor) {
     load_js('tools.js');
     global $themeimg, $m;
@@ -141,34 +177,6 @@ if ($is_editor) {
                 $('#assign_box').find('option').remove().end().append(select_content);
             });
         }
-        function changeAutojudgeScenariosVisibility() {
-            if($(this).is(':checked')) {
-                $(this).parent().find('table').show();
-            } else {
-                $(this).parent().find('table').hide();
-            }
-        }
-        $('#autojudge_new_scenario').click(function(e) {
-            var rows = $(this).parent().parent().parent().find('tr').size()-1;
-            // Clone the first line
-            var newLine = $(this).parent().parent().parent().find('tr:first').clone();
-            // Replace 0 wth the line number
-            newLine.html(newLine.html().replace(/auto_judge_scenarios\[0\]/g, 'auto_judge_scenarios['+rows+']'));
-            // Initialize the remove event and show the button
-            newLine.find('.autojudge_remove_scenario').show();
-            newLine.find('.autojudge_remove_scenario').click(removeRow);
-            // Insert it just before the final line
-            newLine.insertBefore($(this).parent().parent().parent().find('tr:last'));
-            e.preventDefault();
-            return false;
-        });
-        // Remove row
-        function removeRow(e) {
-            $(this).parent().parent().remove();
-            e.preventDefault();
-            return false;
-        }
-        $('.autojudge_remove_scenario').click(removeRow);
     });
     
     </script>";    
@@ -1310,7 +1318,7 @@ function show_student_assignment($id) {
 }
 
 function show_submission_form($id, $user_group_info, $on_behalf_of = false) {
-    global $tool_content, $m, $langWorkFile, $langSendFile, $langSubmit, $uid, $langNotice3, $gid, $is_member,
+    global $tool_content, $m, $langWorkFile, $langSendFile, $langSubmit, $langTestWork, $uid, $langNotice3, $langNotice_test_work, $gid, $is_member,
     $urlAppend, $langGroupSpaceLink, $langOnBehalfOf, $course_code;
 
     $group_select_hidden_input = $group_select_form = '';
@@ -1368,6 +1376,7 @@ function show_submission_form($id, $user_group_info, $on_behalf_of = false) {
             }
     }
     $notice = $on_behalf_of ? '' : "<div class='alert alert-info'>".icon('fa-info-circle')." $langNotice3</div>";   
+    $test_work_notice = $on_behalf_of ? '' : "<div class='alert alert-info'>".icon('fa-info-circle')." $langNotice_test_work</div>";   
     $extra = $on_behalf_of ? "                        
                         <div class='form-group'>
                             <label for='userfile' class='col-sm-2 control-label'>$m[grade]:</label>
@@ -1383,6 +1392,87 @@ function show_submission_form($id, $user_group_info, $on_behalf_of = false) {
                             </div>
                         </div>" : '';
     if (!$is_group_assignment or count($user_group_info) or $on_behalf_of) {
+        $tool_content .= "
+                <div id='testwork-accordion' class='panel-group'>
+                    <a class='collapsed' href='#collapse10' data-parent='#testwork-accordion' data-toggle='collapse'>
+                    <span class='hidden-sm hidden-xs'><h3 style='color:#333333;text-decoration:none;'>$langTestWork{%HELP_LINK_ICON_TEST%}</h3><span>
+                    </a>
+                    <div id='collapse10' class='panel-collapse list-group collapse' style='height: 0px;'>
+                    $test_work_notice
+                    
+                    <div class='form-group'>
+                    <div class='col-sm-10'>
+                        <table>
+                            <thead>
+                                <tr>
+                                  <th>Input</th>
+                                  <th>Expected Output</th>
+                                  <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                  <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][input]'/></td>
+                                  <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][output]' /></td>
+                                  <td class='padding-extra-thin'><a href='#' class='autojudge_remove_scenario' style='display: none;'>X</a></td>
+                                <tr>
+                                  <td> </td>
+                                  <td> </td>
+                                  <td> <input type='submit' value='Νέο σενάριο' id='autojudge_new_scenario_stud' /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                         <table>
+                            <thead>
+                                <tr>
+                                  <th>Programming Language</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class='padding-extra-thin'>
+                                    <select id='lang' name='lang'>
+                                      <option value='C'>C</option>
+                                      <option value='CPP'>C++</option>
+                                      <option value='CPP11'>C++11</option>
+                                      <option value='CLOJURE'>Clojure</option>
+                                      <option value='CSHARP'>C#</option>
+                                      <option value='JAVA'>Java</option>
+                                      <option value='JAVASCRIPT'>Javascript</option>
+                                      <option value='HASKELL'>Haskell</option>
+                                      <option value='PERL'>Perl</option>
+                                      <option value='PHP'>PHP</option>
+                                      <option value='PYTHON'>Python</option>
+                                      <option value='RUBY'>Ruby</option>
+                                    </select>
+                                  </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                     <form class='form-horizontal margin-top-fat toolbox margin-left' role='form' enctype='multipart/form-data' action='$_SERVER[SCRIPT_NAME]?course=$course_code' method='post' >
+                        <input type='hidden' name='id' value='$id' />$group_select_hidden_input
+                        <div class='pull-right'><small>$GLOBALS[langMaxFileSize] " .ini_get('upload_max_filesize') . "</small></div>
+                        <fieldset>
+                        $group_select_form
+                        <div class='form-group'>
+                            <label for='userfile' class='col-sm-2 control-label'>$langWorkFile:</label>
+                            <div class='col-sm-10'>
+                              <input type='file'  name='userfile' id='userfile'> 
+                            </div>
+                        </div>
+                        $extra
+                        <div class='col-sm-10 col-sm-offset-2'>
+                            <input class='btn btn-primary' type='submit' value='$langSubmit' name='test_work_submit' />
+                        </div>
+                        </fieldset>
+                     </form>
+                     </div></div>";
+
+
         $tool_content .= "
                     <h3>$langSubmit</h3>
                     <hr><br>

@@ -74,7 +74,7 @@ require_once 'tools.php';
  * @param string $body_action (optional) code to be added to the BODY tag
  */
 function draw($toolContent, $menuTypeID, $tool_css = null, $head_content = null, $body_action = null, $hideLeftNav = null, $perso_tool_content = null) {
-    global $courseHome, $course_code, $helpTopic,
+    global $courseHome, $course_code, $helpTopic, $helpTopic_sm,
     $homePage, $title, $is_editor, $langActivate,
     $langAdmin, $langAdvancedSearch, $langAnonUser, $langChangeLang,
     $langChooseLang, $langCopyrightFooter, $langDeactivate,
@@ -464,11 +464,16 @@ function draw($toolContent, $menuTypeID, $tool_css = null, $head_content = null,
         if ($require_help == true) {
             if (isset($require_current_course) and !$is_editor) {
                 $helpTopic .= '_student';
+                $helpTopic_sm .= '_student';
             } 
             $head_content .= "
             <script>
             $(function() {
                 $('#help-btn').click(function(e) {
+                    e.preventDefault();
+                    $.get($(this).attr(\"href\"), function(data) {bootbox.alert(data);});
+                });
+                $('#help-btn2').click(function(e) {
                     e.preventDefault();
                     $.get($(this).attr(\"href\"), function(data) {bootbox.alert(data);});
                 });
@@ -484,6 +489,13 @@ function draw($toolContent, $menuTypeID, $tool_css = null, $head_content = null,
 
             $t->set_var('HELP_LINK_ICON', $help_link_icon);
             $t->set_var('LANG_HELP', $langHelp);
+                    
+            $help_link_icon_test = "
+            <a id='help-btn2' href=\"" . $urlAppend . "modules/help/help.php?topic=$helpTopic_sm&amp;language=$language\">
+                <i class='fa fa-question-circle tiny-icon' rel='tooltip' data-toggle='tooltip' data-placement='top' title='$langHelp'></i>
+            </a>";
+            $t->set_var('HELP_LINK_ICON_TEST', $help_link_icon_test);
+
         } else {
             $t->set_var('HELP_LINK_ICON', '');
             $t->set_var('LANG_HELP', '');
