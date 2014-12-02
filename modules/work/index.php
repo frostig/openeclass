@@ -90,6 +90,7 @@ if ($is_editor) {
 $head_content .= " // make this for every user, because we need it for students also
 <script type='text/javascript'>
 $(function() { 
+$('input[name=auto_judge]').click(changeAutojudgeScenariosVisibility);
  function changeAutojudgeScenariosVisibility() {
             if($(this).is(':checked')) {
                 $(this).parent().find('table').show();
@@ -130,7 +131,6 @@ if ($is_editor) {
         $('input[name=group_submissions]').click(changeAssignLabel);
         $('input[id=assign_button_some]').click(ajaxAssignees);        
         $('input[id=assign_button_all]').click(hideAssignees);
-        $('input[name=auto_judge]').click(changeAutojudgeScenariosVisibility);
         function hideAssignees()
         {
             $('#assignees_tbl').addClass('hide');
@@ -1392,87 +1392,85 @@ function show_submission_form($id, $user_group_info, $on_behalf_of = false) {
                             </div>
                         </div>" : '';
     if (!$is_group_assignment or count($user_group_info) or $on_behalf_of) {
-        $tool_content .= "
-                <div id='testwork-accordion' class='panel-group'>
-                    <a class='collapsed' href='#collapse10' data-parent='#testwork-accordion' data-toggle='collapse'>
-                    <span class='hidden-sm hidden-xs'><h3 style='color:#333333;text-decoration:none;'>$langTestWork{%HELP_LINK_ICON_TEST%}</h3><span>
-                    </a>
-                    <div id='collapse10' class='panel-collapse list-group collapse' style='height: 0px;'>
-                    $test_work_notice
-                    
-                    <div class='form-group'>
-                    <div class='col-sm-10'>
-                        <table>
-                            <thead>
-                                <tr>
-                                  <th>Input</th>
-                                  <th>Expected Output</th>
-                                  <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                  <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][input]'/></td>
-                                  <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][output]' /></td>
-                                  <td class='padding-extra-thin'><a href='#' class='autojudge_remove_scenario' style='display: none;'>X</a></td>
-                                <tr>
-                                  <td> </td>
-                                  <td> </td>
-                                  <td> <input type='submit' value='Νέο σενάριο' id='autojudge_new_scenario_stud' /></td>
-                                </tr>
-                            </tbody>
-                        </table>
+            $tool_content .= "
+                    <div id='testwork-accordion' class='panel-group'>
+                        <a class='collapsed' href='#collapse10' data-parent='#testwork-accordion' data-toggle='collapse'>
+                        <span class='hidden-sm hidden-xs'><h3 style='color:#333333;text-decoration:none;'>$langTestWork{%HELP_LINK_ICON_TEST%}</h3><span>
+                        </a>
+                        <div id='collapse10' class='panel-collapse list-group collapse' style='height: 0px;'>
+                        $test_work_notice
+                        <form class='form-horizontal' role='form' enctype='multipart/form-data' action='$_SERVER[SCRIPT_NAME]?course=$course_code' method='post' >
 
-                         <table>
-                            <thead>
-                                <tr>
-                                  <th>Programming Language</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class='padding-extra-thin'>
-                                    <select id='lang' name='lang'>
-                                      <option value='C'>C</option>
-                                      <option value='CPP'>C++</option>
-                                      <option value='CPP11'>C++11</option>
-                                      <option value='CLOJURE'>Clojure</option>
-                                      <option value='CSHARP'>C#</option>
-                                      <option value='JAVA'>Java</option>
-                                      <option value='JAVASCRIPT'>Javascript</option>
-                                      <option value='HASKELL'>Haskell</option>
-                                      <option value='PERL'>Perl</option>
-                                      <option value='PHP'>PHP</option>
-                                      <option value='PYTHON'>Python</option>
-                                      <option value='RUBY'>Ruby</option>
-                                    </select>
-                                  </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                     <form class='form-horizontal margin-top-fat toolbox margin-left' role='form' enctype='multipart/form-data' action='$_SERVER[SCRIPT_NAME]?course=$course_code' method='post' >
-                        <input type='hidden' name='id' value='$id' />$group_select_hidden_input
-                        <div class='pull-right'><small>$GLOBALS[langMaxFileSize] " .ini_get('upload_max_filesize') . "</small></div>
-                        <fieldset>
-                        $group_select_form
                         <div class='form-group'>
-                            <label for='userfile' class='col-sm-2 control-label'>$langWorkFile:</label>
-                            <div class='col-sm-10'>
-                              <input type='file'  name='userfile' id='userfile'> 
+                        <div class='col-sm-10'>
+                            <table>
+                                <thead>
+                                    <tr>
+                                      <th>Input</th>
+                                      <th>Expected Output</th>
+                                      <th>Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                      <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][input]'/></td>
+                                      <td class='padding-extra-thin'><input type='text' name='auto_judge_scenarios[0][output]' /></td>
+                                      <td class='padding-extra-thin'><a href='#' class='autojudge_remove_scenario' style='display: none;'>X</a></td>
+                                    <tr>
+                                      <td> </td>
+                                      <td> </td>
+                                      <td> <input type='submit' value='Νέο σενάριο' id='autojudge_new_scenario_stud' /></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                             <table>
+                                <thead>
+                                    <tr>
+                                      <th>Programming Language</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class='padding-extra-thin'>
+                                        <select id='lang' name='lang'>
+                                          <option value='C'>C</option>
+                                          <option value='CPP'>C++</option>
+                                          <option value='CPP11'>C++11</option>
+                                          <option value='CLOJURE'>Clojure</option>
+                                          <option value='CSHARP'>C#</option>
+                                          <option value='JAVA'>Java</option>
+                                          <option value='JAVASCRIPT'>Javascript</option>
+                                          <option value='HASKELL'>Haskell</option>
+                                          <option value='PERL'>Perl</option>
+                                          <option value='PHP'>PHP</option>
+                                          <option value='PYTHON'>Python</option>
+                                          <option value='RUBY'>Ruby</option>
+                                        </select>
+                                      </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class='margin-top-fat toolbox margin-left'
+                            <input type='hidden' name='id' value='$id' />$group_select_hidden_input
+                            <div class='pull-right'><small>$GLOBALS[langMaxFileSize] " .ini_get('upload_max_filesize') . "</small></div>
+                            <fieldset>
+                            $group_select_form
+                            <div class='form-group'>
+                                <label for='userfile' class='col-sm-2 control-label'>$langWorkFile:</label>
+                                <div class='col-sm-10'>
+                                  <input type='file'  name='userfile' id='userfile'> 
+                                </div>
                             </div>
-                        </div>
-                        $extra
-                        <div class='col-sm-10 col-sm-offset-2'>
-                            <input class='btn btn-primary' type='submit' value='$langSubmit' name='test_work_submit' />
-                        </div>
-                        </fieldset>
-                     </form>
-                     </div></div>";
-
-
+                            $extra
+                            <div class='col-sm-10 col-sm-offset-2'>
+                                <input class='btn btn-primary' type='submit' value='$langSubmit' name='test_work_submit' />
+                            </div>
+                            </fieldset>
+                         </form></div>
+                         </div></div>";
         $tool_content .= "
                     <h3>$langSubmit</h3>
                     <hr><br>
